@@ -114,7 +114,7 @@ export default function BlogPostPage({
                   <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-900">
                     How Fieldy AI Works?
                   </h2>
-                  
+
                   <p className="text-gray-700 leading-relaxed mb-6">
                     Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                   </p>
@@ -278,30 +278,30 @@ export default function BlogPostPage({
           </div>
 
           {/* Sidebar - Right Column (1/3 width) */}
-          <aside className="lg:col-span-1">
-            {/* Table of Contents */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 sticky top-4">
+          <aside className="lg:col-span-1 mt-11">
+            {/* Table of Contents - Fixed positioning */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
               <h3 className="font-bold text-lg mb-4 text-gray-900">TABLE OF CONTENT</h3>
               <nav className="space-y-2 text-sm">
-                <a href="#" className="block text-[#6b5d4f] hover:underline">
+                <a href="#how-it-works" className="block text-[#6b5d4f] hover:underline">
                   1. How Fieldy AI Works?
                 </a>
-                <a href="#" className="block text-gray-700 hover:text-[#6b5d4f]">
+                <a href="#key-benefits" className="block text-gray-700 hover:text-[#6b5d4f]">
                   2. Key Benefits
                 </a>
-                <a href="#" className="block text-gray-700 hover:text-[#6b5d4f]">
+                <a href="#voice-recorder" className="block text-gray-700 hover:text-[#6b5d4f]">
                   3. Best AI Voice Recorder
                 </a>
-                <a href="#" className="block text-gray-700 hover:text-[#6b5d4f]">
+                <a href="#summaries" className="block text-gray-700 hover:text-[#6b5d4f]">
                   4. Generate Summaries
                 </a>
-                <a href="#" className="block text-gray-700 hover:text-[#6b5d4f]">
+                <a href="#meeting-assistant" className="block text-gray-700 hover:text-[#6b5d4f]">
                   5. Best AI meeting Assistant
                 </a>
-                <a href="#" className="block text-gray-700 hover:text-[#6b5d4f]">
+                <a href="#for-whom" className="block text-gray-700 hover:text-[#6b5d4f]">
                   6. For Whom Is It Best?
                 </a>
-                <a href="#" className="block text-gray-700 hover:text-[#6b5d4f]">
+                <a href="#pricing" className="block text-gray-700 hover:text-[#6b5d4f]">
                   7. Pricing Plans
                 </a>
               </nav>

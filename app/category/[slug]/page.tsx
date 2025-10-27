@@ -121,10 +121,10 @@ export default function CategoryPage({
 
         {/* Our Featured Coupons Section */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900">
+          <h2 className="text-2xl font-bold mb-4 text-gray-900 text-center">
             Our Featured Coupons
           </h2>
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 mb-6 text-center">
             Wadav.com curates offers for anyone and most part free, when you pay through our links, we may earn a commission.
           </p>
           
@@ -141,10 +141,10 @@ export default function CategoryPage({
 
         {/* Our Featured Stores Section */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">
             Our Featured Stores
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 text-center">
             {featuredStores.map((store) => (
               <Link
                 key={store.slug}
@@ -159,10 +159,10 @@ export default function CategoryPage({
 
         {/* Related Categories Section */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">
             Related Categories
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 text-center">
             {relatedCategories.map((cat) => (
               <Link
                 key={cat.slug}

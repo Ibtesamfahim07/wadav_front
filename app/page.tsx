@@ -58,10 +58,10 @@ export default function Home() {
       <section className="py-12 px-4 bg-[#f5f5f5]">
         <div className="container mx-auto max-w-6xl">
           <div className="mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900 text-center">
               Today's Top Coupons and Discount Codes
             </h2>
-            <p className="text-gray-600 italic text-sm">
+            <p className="text-gray-600 italic text-sm text-center">
               Wadav.com is where all the coupons and deals come along, discover the extraordinary things that may include deal in coupons.
             </p>
           </div>
@@ -127,41 +127,49 @@ export default function Home() {
       </section>
 
       {/* Our Top Stores - Text Links */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center text-gray-900">
-            Our Top Stores
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-            {topStores.map((store) => (
-              <Link
-                key={store.id}
-                href={`/store/${store.slug}`}
-                className="text-gray-700 hover:text-[#6b5d4f] transition-colors font-medium py-2"
-              >
-                {store.name}
-              </Link>
-            ))}
+      <section className="py-16 px-4 bg-[#f5f5f5]">
+        <div className="container mx-auto max-w-6xl px-4">
+          <div className="bg-[#f5f5f5] rounded-lg shadow-sm mb-6 py-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">
+              Our Top Stores
+            </h2>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+              {topStores.map((store) => (
+                <Link
+                  key={store.id}
+                  href={`/store/${store.slug}`}
+                  className="text-gray-700 hover:text-[#6b5d4f] transition-colors font-medium py-2"
+                >
+                  {store.name}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Popular Stores */}
       <section className="py-16 px-4 bg-[#f5f5f5]">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center text-gray-900">
-            Popular Stores
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
-            {stores.map((store) => (
-              <Link
-                key={store.id}
-                href={`/store/${store.slug}`}
-                className="text-gray-700 hover:text-[#6b5d4f] transition-colors font-medium py-2"
-              >
-                {store.name}
-              </Link>
-            ))}
+        <div className="container mx-auto max-w-6xl px-4">
+          <div className="bg-[#f5f5f5] rounded-lg shadow-sm mb-6 py-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900">
+              Popular Stores
+            </h2>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+              {stores.map((store) => (
+                <Link
+                  key={store.id}
+                  href={`/store/${store.slug}`}
+                  className="text-gray-700 hover:text-[#6b5d4f] transition-colors font-medium py-2"
+                >
+                  {store.name}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>

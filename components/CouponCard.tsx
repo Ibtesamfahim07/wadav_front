@@ -81,7 +81,7 @@ export default function CouponCard({
       <div className="flex items-start gap-6">
         {/* Discount Badge */}
         <div
-          className={`flex-shrink-0 w-20 h-20 ${discountBg} flex flex-col items-center justify-center rounded text-white font-bold`}
+          className={`flex-shrink-0 w-24 h-28 ${discountBg} flex flex-col items-center justify-center rounded-lg text-white font-bold`}
         >
           <p className="text-center text-xl leading-tight px-2">
             {discount}
