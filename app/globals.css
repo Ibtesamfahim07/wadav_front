@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 26, 26, 26;
+  --background-start-rgb: 245, 245, 245;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    /* Wadav Color Scheme */
+    --background: 0 0% 96%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 30 15% 40%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 30 15% 40%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 79% 66%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 30 15% 40%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-[#f5f5f5] text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+}
+
+@layer components {
+  /* Primary Button Style */
+  .btn-primary {
+    @apply bg-[#ff6b6b] hover:bg-[#ff5252] text-white font-medium px-6 py-2.5 rounded-md transition-colors;
+  }
+
+  /* Card Styles */
+  .card-white {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow;
+  }
+
+  /* Link Styles */
+  .link-primary {
+    @apply text-[#6b5d4f] hover:text-[#5a4d40] transition-colors;
+  }
+
+  /* Section Background */
+  .section-gray {
+    @apply bg-[#f5f5f5];
+  }
+
+  .section-white {
+    @apply bg-white;
+  }
+}
+
+/* Smooth animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6b5d4f;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a4d40;
+}
+
+/* Navigation Menu Styles */
+[data-radix-navigation-menu-viewport] {
+  @apply bg-white border border-gray-200 shadow-lg;
+}
+
+/* Input Focus Styles */
+input:focus, 
+textarea:focus {
+  @apply ring-2 ring-[#6b5d4f] border-[#6b5d4f] outline-none;
+}
+
+/* Button Hover Effects */
+button:hover {
+  @apply transform transition-transform duration-200;
+}
+
+/* Card Hover Effects */
+.hover-lift:hover {
+  @apply -translate-y-1 shadow-lg;
+}
+
+/* Ensure white backgrounds for cards */
+.bg-card {
+  background-color: #ffffff !important;
+}
+
+/* Golden brown primary color */
+.text-primary {
+  color: #6b5d4f !important;
+}
+
+.bg-primary {
+  background-color: #6b5d4f !important;
+}
+
+.border-primary {
+  border-color: #6b5d4f !important;
+}
+
+/* Coral red accent color for buttons */
+.bg-accent-red {
+  background-color: #ff6b6b !important;
+}
+
+.hover\:bg-accent-red:hover {
+  background-color: #ff5252 !important;
+}
