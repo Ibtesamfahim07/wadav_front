@@ -1,0 +1,539 @@
+// app/admin/stores/page.tsx
+'use client';
+
+import { useState } from 'react';
+import { useAdmin } from '@/contexts/AdminContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+
+export default function StoresPage() {
+  const { stores, addStore, updateStore, deleteStore } = useAdmin();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingStore, setEditingStore] = useState<any>(null);
+  const { toast } = useToast();
+
+  const [formData, setFormData] = useState({
+    name: '',
+    slug: '',
+    logo: '',
+    description: '',
+    category: '',
+    url: '',
+    couponsCount: 0,
+    aboutStore: '',
+    howToApply: '',
+    whyChoose: '',
+    faqs: [] as { question: string; answer: string; }[],
+    similarStores: [] as string[],
+    popularCoupons: '',
+    trustContent: '',
+    customerSavings: '',
+    verifiedSavings: '',
+    competitorPricing: '',
+    priceComparison: [] as { item: string; withCoupon: string; withoutCoupon: string; savings: string; }[],
+    expertTips: '',
+    benefits: '',
+    whyUseCoupons: '',
+  });
+
+  const filteredStores = stores.filter(s =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleEdit = (store: any) => {
+    setEditingStore(store);
+    setFormData({
+      name: store.name,
+      slug: store.slug,
+      logo: store.logo,
+      description: store.description,
+      category: store.category,
+      url: store.url,
+      couponsCount: store.couponsCount,
+      aboutStore: store.aboutStore || '',
+      howToApply: store.howToApply || '',
+      whyChoose: store.whyChoose || '',
+      faqs: store.faqs || [],
+      similarStores: store.similarStores || [],
+      popularCoupons: store.popularCoupons || '',
+      trustContent: store.trustContent || '',
+      customerSavings: store.customerSavings || '',
+      verifiedSavings: store.verifiedSavings || '',
+      competitorPricing: store.competitorPricing || '',
+      priceComparison: store.priceComparison || [],
+      expertTips: store.expertTips || '',
+      benefits: store.benefits || '',
+      whyUseCoupons: store.whyUseCoupons || '',
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this store?')) {
+      deleteStore(id);
+      toast({ title: 'Store deleted successfully' });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (editingStore) {
+      updateStore(editingStore.id, formData);
+      toast({ title: 'Store updated successfully' });
+    } else {
+      addStore({
+        id: Date.now().toString(),
+        ...formData,
+      });
+      toast({ title: 'Store added successfully' });
+    }
+
+    setIsDialogOpen(false);
+    setEditingStore(null);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      slug: '',
+      logo: '',
+      description: '',
+      category: '',
+      url: '',
+      couponsCount: 0,
+      aboutStore: '',
+      howToApply: '',
+      whyChoose: '',
+      faqs: [],
+      similarStores: [],
+      popularCoupons: '',
+      trustContent: '',
+      customerSavings: '',
+      verifiedSavings: '',
+      competitorPricing: '',
+      priceComparison: [],
+      expertTips: '',
+      benefits: '',
+      whyUseCoupons: '',
+    });
+  };
+
+  const handleNameChange = (name: string) => {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    setFormData({ ...formData, name, slug });
+  };
+
+  const addFaq = () => {
+    setFormData({
+      ...formData,
+      faqs: [...formData.faqs, { question: '', answer: '' }]
+    });
+  };
+
+  const updateFaq = (index: number, field: 'question' | 'answer', value: string) => {
+    const newFaqs = [...formData.faqs];
+    newFaqs[index][field] = value;
+    setFormData({ ...formData, faqs: newFaqs });
+  };
+
+  const removeFaq = (index: number) => {
+    setFormData({
+      ...formData,
+      faqs: formData.faqs.filter((_, i) => i !== index)
+    });
+  };
+
+  const addPriceComparison = () => {
+    setFormData({
+      ...formData,
+      priceComparison: [...formData.priceComparison, { item: '', withCoupon: '', withoutCoupon: '', savings: '' }]
+    });
+  };
+
+  const updatePriceComparison = (index: number, field: 'item' | 'withCoupon' | 'withoutCoupon' | 'savings', value: string) => {
+    const newComparisons = [...formData.priceComparison];
+    newComparisons[index][field] = value;
+    setFormData({ ...formData, priceComparison: newComparisons });
+  };
+
+  const removePriceComparison = (index: number) => {
+    setFormData({
+      ...formData,
+      priceComparison: formData.priceComparison.filter((_, i) => i !== index)
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold">Manage Stores</h2>
+          <p className="text-muted-foreground">Add, edit, or delete stores</p>
+        </div>
+        <Button onClick={() => {
+          setEditingStore(null);
+          resetForm();
+          setIsDialogOpen(true);
+        }}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Store
+        </Button>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search stores..."
+          className="pl-10"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Coupons</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredStores.map((store) => (
+              <TableRow key={store.id}>
+                <TableCell className="font-medium">{store.name}</TableCell>
+                <TableCell>{store.category}</TableCell>
+                <TableCell>{store.couponsCount}</TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(store)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(store.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingStore ? 'Edit Store' : 'Add New Store'}</DialogTitle>
+            <DialogDescription>
+              {editingStore ? 'Update store details' : 'Create a new store'}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Basic Information</h3>
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Store Name</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="slug">Slug</Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="logo">Logo URL</Label>
+                  <Input
+                    id="logo"
+                    value={formData.logo}
+                    onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+                    placeholder="https://example.com/logo.png"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="url">Store URL</Label>
+                  <Input
+                    id="url"
+                    value={formData.url}
+                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                    placeholder="https://store.com"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Input
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Short Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="couponsCount">Coupons Count</Label>
+                  <Input
+                    id="couponsCount"
+                    type="number"
+                    value={formData.couponsCount}
+                    onChange={(e) => setFormData({ ...formData, couponsCount: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Store Details</h3>
+                <div className="grid gap-2">
+                  <Label>About the Store</Label>
+                  <Textarea
+                    value={formData.aboutStore}
+                    onChange={(e) => setFormData({ ...formData, aboutStore: e.target.value })}
+                    placeholder="Detailed information about the store..."
+                    rows={5}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>How to Apply Coupons</Label>
+                  <Textarea
+                    value={formData.howToApply}
+                    onChange={(e) => setFormData({ ...formData, howToApply: e.target.value })}
+                    placeholder="Step-by-step guide..."
+                    rows={5}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Why Choose This Store</Label>
+                  <Textarea
+                    value={formData.whyChoose}
+                    onChange={(e) => setFormData({ ...formData, whyChoose: e.target.value })}
+                    placeholder="Reasons to shop here..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">FAQs</h3>
+                {formData.faqs.map((faq, index) => (
+                  <div key={index} className="border p-4 rounded-md space-y-2">
+                    <div className="grid gap-2">
+                      <Label>Question</Label>
+                      <Input
+                        value={faq.question}
+                        onChange={(e) => updateFaq(index, 'question', e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Answer</Label>
+                      <Textarea
+                        value={faq.answer}
+                        onChange={(e) => updateFaq(index, 'answer', e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                    <Button type="button" variant="destructive" size="sm" onClick={() => removeFaq(index)}>
+                      Remove FAQ
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={addFaq}>
+                  Add FAQ
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Similar Stores</h3>
+                <div className="grid gap-2">
+                  <Label>Similar Stores (comma separated)</Label>
+                  <Input
+                    value={formData.similarStores.join(', ')}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      similarStores: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                    })}
+                    placeholder="Store1, Store2"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Additional Content</h3>
+                <div className="grid gap-2">
+                  <Label>Popular Coupons</Label>
+                  <Textarea
+                    value={formData.popularCoupons}
+                    onChange={(e) => setFormData({ ...formData, popularCoupons: e.target.value })}
+                    placeholder="Describe popular coupons for this store..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Trust Content</Label>
+                  <Textarea
+                    value={formData.trustContent}
+                    onChange={(e) => setFormData({ ...formData, trustContent: e.target.value })}
+                    placeholder="Why customers should trust this store..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Customer Savings Stories</Label>
+                  <Textarea
+                    value={formData.customerSavings}
+                    onChange={(e) => setFormData({ ...formData, customerSavings: e.target.value })}
+                    placeholder="Real customer savings examples..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Verified Savings</Label>
+                  <Textarea
+                    value={formData.verifiedSavings}
+                    onChange={(e) => setFormData({ ...formData, verifiedSavings: e.target.value })}
+                    placeholder="Verified user results..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Competitor Pricing Info</Label>
+                  <Textarea
+                    value={formData.competitorPricing}
+                    onChange={(e) => setFormData({ ...formData, competitorPricing: e.target.value })}
+                    placeholder="How this store compares to competitors..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-medium">Price Comparison Table</h4>
+                  {formData.priceComparison.map((comp, index) => (
+                    <div key={index} className="border p-4 rounded-md space-y-2">
+                      <div className="grid gap-2">
+                        <Label>Item</Label>
+                        <Input
+                          value={comp.item}
+                          onChange={(e) => updatePriceComparison(index, 'item', e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>With Coupon</Label>
+                        <Input
+                          value={comp.withCoupon}
+                          onChange={(e) => updatePriceComparison(index, 'withCoupon', e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Without Coupon</Label>
+                        <Input
+                          value={comp.withoutCoupon}
+                          onChange={(e) => updatePriceComparison(index, 'withoutCoupon', e.target.value)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Savings</Label>
+                        <Input
+                          value={comp.savings}
+                          onChange={(e) => updatePriceComparison(index, 'savings', e.target.value)}
+                        />
+                      </div>
+                      <Button type="button" variant="destructive" size="sm" onClick={() => removePriceComparison(index)}>
+                        Remove Row
+                      </Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" onClick={addPriceComparison}>
+                    Add Comparison Row
+                  </Button>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Expert Tips</Label>
+                  <Textarea
+                    value={formData.expertTips}
+                    onChange={(e) => setFormData({ ...formData, expertTips: e.target.value })}
+                    placeholder="Expert tips to maximize savings..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Benefits of Using Coupons</Label>
+                  <Textarea
+                    value={formData.benefits}
+                    onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
+                    placeholder="List the benefits..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Why Use These Coupons</Label>
+                  <Textarea
+                    value={formData.whyUseCoupons}
+                    onChange={(e) => setFormData({ ...formData, whyUseCoupons: e.target.value })}
+                    placeholder="Reasons to use these coupons..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">{editingStore ? 'Update' : 'Add'} Store</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

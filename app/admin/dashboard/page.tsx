@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAdmin } from '@/app/contexts/AdminContext';
+import { useAdmin } from '@/contexts/AdminContext';
 import { Tag, Store, FileText, TrendingUp } from 'lucide-react';
 import {
   Table,

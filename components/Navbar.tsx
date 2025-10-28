@@ -1,16 +1,10 @@
-// app/components/Navbar.tsx
+// components/Navbar.tsx
 "use client";
 
 import { Search, Menu, X, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import { stores } from "@/lib/data";
 
@@ -47,20 +41,21 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
+        <div className="flex items-center h-16 gap-8">
+
+          {/* Logo - Left */}
+          <Link href="/" className="flex items-center flex-shrink-0">
             <span className="text-2xl font-bold tracking-wide" style={{ color: '#6b5d4f' }}>
               DEALHUB
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Center: Coupons & Categories */}
+          <div className="hidden md:flex items-center gap-8 flex-1 justify-center ml-32">
             {/* Coupons Dropdown */}
             <div className="relative group">
               <button
-                className="text-sm uppercase flex items-center gap-1 text-gray-700 hover:text-[#6b5d4f] transition-colors py-2"
+                className="text-sm uppercase flex items-center gap-1 text-gray-700 hover:text-[#6b5d4f] transition-colors py-2 whitespace-nowrap"
                 onMouseEnter={() => setIsCouponsOpen(true)}
                 onMouseLeave={() => setIsCouponsOpen(false)}
               >
@@ -101,7 +96,7 @@ export default function Navbar() {
             {/* Categories Dropdown */}
             <div className="relative group">
               <button
-                className="text-sm uppercase flex items-center gap-1 text-gray-700 hover:text-[#6b5d4f] transition-colors py-2"
+                className="text-sm uppercase flex items-center gap-1 text-gray-700 hover:text-[#6b5d4f] transition-colors py-2 whitespace-nowrap"
                 onMouseEnter={() => setIsCategoriesOpen(true)}
                 onMouseLeave={() => setIsCategoriesOpen(false)}
               >
@@ -140,58 +135,66 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="hidden md:block">
-            <div className="relative">
-              <Input
-                type="search"
-                placeholder="SEARCH ON DEALHUB.COM"
-                className="w-72 pl-10 pr-4 h-10 text-sm border-gray-300 focus:border-[#6b5d4f] focus:ring-[#6b5d4f]"
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          {/* Right Section: Search Bar & Login */}
+          <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+            {/* Search Bar */}
+            <div className="w-40">
+              <div className="relative">
+                <Input
+                  type="search"
+                  placeholder="SEARCH"
+                  className="w-full pl-10 pr-4 h-10 text-sm border-gray-300 focus:border-[#6b5d4f] focus:ring-[#6b5d4f]"
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
             </div>
+
+            {/* Login Button */}
+            <Link href="/user/login">
+              <Button className="bg-[#6b5d4f] hover:bg-[#5a4d41] text-white text-sm font-medium whitespace-nowrap">
+                Login as User
+              </Button>
+            </Link>
           </div>
 
-          {/* Mobile toggle */}
+          {/* Mobile Menu Toggle */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 ml-auto"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-3 border-t border-gray-200 animate-fade-in">
-            <Link
-              href="/"
-              className="block px-4 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
+          <div className="md:hidden py-4 space-y-3 border-t border-gray-200">
+            {/* Mobile Search */}
+            <div className="px-4 pb-3">
+              <div className="relative">
+                <Input
+                  type="search"
+                  placeholder="SEARCH ON DEALHUB.COM"
+                  className="w-full pl-10 pr-4 h-10 text-sm border-gray-300"
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+            
+            <Link href="/" className="block px-4 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
               Home
             </Link>
-            <Link
-              href="/stores"
-              className="block px-4 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
+            <Link href="/stores" className="block px-4 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
               Stores
             </Link>
-            <Link
-              href="/categories"
-              className="block px-4 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
+            <Link href="/categories" className="block px-4 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
               Categories
             </Link>
-            <Link
-              href="/blog"
-              className="block px-4 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Blog
-            </Link>
+            <div className="pt-2 border-t border-gray-200 space-y-2">
+              <Link href="/user/login" className="block px-4 py-2 text-sm font-medium bg-[#6b5d4f] text-white rounded-lg text-center" onClick={() => setIsMenuOpen(false)}>
+                Login as User
+              </Link>
+            </div>
           </div>
         )}
       </div>

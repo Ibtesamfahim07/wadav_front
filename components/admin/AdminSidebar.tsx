@@ -1,7 +1,9 @@
+// components/admin/AdminSidebar.tsx
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { Users } from 'lucide-react';
 import {
   LayoutDashboard,
   Tag,
@@ -22,10 +24,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useSidebar } from '@/components/ui/sidebar';
+import { useRouter } from 'next/navigation';
 
 const menuItems = [
   { title: 'Dashboard', url: '/admin/dashboard', icon: LayoutDashboard },
@@ -34,14 +37,15 @@ const menuItems = [
   { title: 'Stores', url: '/admin/stores', icon: Store },
   { title: 'Categories', url: '/admin/categories', icon: FolderTree },
   { title: 'Blog Posts', url: '/admin/blog-posts', icon: FileText },
+  { title: 'Users', url: '/admin/users', icon: Users },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
 ];
 
 export function AdminSidebar() {
   const { state } = useSidebar();
-  const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const pathname = usePathname();
   const isCollapsed = state === 'collapsed';
 
   const handleLogout = () => {
@@ -50,7 +54,7 @@ export function AdminSidebar() {
       title: 'Logged out',
       description: 'You have been logged out successfully',
     });
-    router.push('/admin');
+    router.push('/admin/login');
   };
 
   return (
@@ -74,11 +78,9 @@ export function AdminSidebar() {
                   <SidebarMenuButton asChild>
                     <Link
                       href={item.url}
-                      className={`flex items-center gap-2 p-2 rounded-md transition-colors ${
-                        pathname === item.url
-                          ? 'bg-muted text-primary font-medium'
-                          : 'hover:bg-muted/50'
-                      }`}
+                      className={pathname === item.url
+                        ? 'bg-muted text-primary font-medium'
+                        : 'hover:bg-muted/50'}
                     >
                       <item.icon className="h-4 w-4" />
                       {!isCollapsed && <span>{item.title}</span>}
