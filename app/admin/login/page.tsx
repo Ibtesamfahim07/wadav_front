@@ -1,3 +1,4 @@
+// app/admin/admin/login/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -15,25 +16,34 @@ const AdminLogin = () => {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Hardcoded credentials
-    if (username === 'admin' && password === 'admin123') {
-      if (typeof window !== 'undefined') {
+
+    console.log('Attempting login with:', { username, password });
+
+    try {
+      // CHANGE THIS LINE - add /admin to the path
+      const res = await fetch('http://localhost:5000/api/admin/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      console.log('Response status:', res.status);
+
+      const data = await res.json();
+      console.log('Response data:', data);
+
+      if (data.success) {
         localStorage.setItem('admin_logged_in', 'true');
+        toast({ title: 'Success', description: 'Logged in!' });
+        router.push('/admin/dashboard');
+      } else {
+        toast({ title: 'Failed', description: data.message, variant: 'destructive' });
       }
-      toast({
-        title: 'Login successful',
-        description: 'Welcome to the admin panel',
-      });
-      router.push('/admin/dashboard');
-    } else {
-      toast({
-        title: 'Login failed',
-        description: 'Invalid username or password',
-        variant: 'destructive',
-      });
+    } catch (err) {
+      console.error('Fetch error:', err);
+      toast({ title: 'Error', description: 'Cannot reach backend', variant: 'destructive' });
     }
   };
 
@@ -47,15 +57,13 @@ const AdminLogin = () => {
             </div>
           </div>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the admin panel</CardDescription>
+          <CardDescription>Enter your credentials</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label>Username</Label>
               <Input
-                id="username"
-                type="text"
                 placeholder="admin"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -63,9 +71,8 @@ const AdminLogin = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label>Password</Label>
               <Input
-                id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
@@ -73,15 +80,11 @@ const AdminLogin = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
+            <Button type="submit" className="w-full">Login</Button>
           </form>
-          <div className="mt-4 text-sm text-muted-foreground text-center">
-            <p>Demo credentials:</p>
-            <p className="font-mono">Username: admin</p>
-            <p className="font-mono">Password: admin123</p>
-          </div>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Use: <code>admin</code> / <code>admin123</code>
+          </p>
         </CardContent>
       </Card>
     </div>
