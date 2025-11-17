@@ -122,9 +122,7 @@ export default function CouponsPage() {
 
   const prefillStoreId = searchParams?.get('storeId');
 
-  const [formData, setFormData] = useState<Omit<Coupon, 'id' | 'clickCount' | 'usageCount' | 'storeId' | 'storeRef'> & {
-    usageCount: number;
-  }>({
+  const [formData, setFormData] = useState({
     code: '',
     title: '',
     discount: '',
@@ -133,11 +131,11 @@ export default function CouponsPage() {
     storeLogo: '',
     storeUrl: '',
     category: '',
-    expiryDate: '',
+    expiryDate: '', // Changed from nullable to always string
     active: true,
     verified: true,
     usageCount: 0,
-    type: 'code',
+    type: 'code' as 'code' | 'link',
   });
 
   // Load stores & coupons
@@ -217,7 +215,7 @@ export default function CouponsPage() {
       storeLogo: coupon.storeLogo,
       storeUrl: coupon.storeUrl,
       category: coupon.category,
-      expiryDate: coupon.expiryDate ? coupon.expiryDate.split('T')[0] : '',
+      expiryDate: coupon.expiryDate ? coupon.expiryDate.split('T')[0] : '', // Convert null to empty string
       active: coupon.active,
       verified: coupon.verified,
       usageCount: coupon.usageCount,
@@ -260,7 +258,7 @@ export default function CouponsPage() {
       storeLogo: '',
       storeUrl: '',
       category: '',
-      expiryDate: '',
+      expiryDate: '', // Always empty string, never null
       active: true,
       verified: true,
       usageCount: 0,
@@ -291,7 +289,7 @@ export default function CouponsPage() {
       code: formData.code,
       discount: formData.discount,
       description: formData.description,
-      expiryDate: formData.expiryDate || null,
+      expiryDate: formData.expiryDate || null, // Send null if empty
       active: formData.active,
       verified: formData.verified,
       usageCount: formData.usageCount,
@@ -357,7 +355,7 @@ export default function CouponsPage() {
           <h2 className="text-3xl font-bold">Manage Coupons</h2>
           <p className="text-muted-foreground">Add, edit, or delete coupons</p>
         </div>
-        {/* <Button
+        <Button
           onClick={() => {
             setEditingCoupon(null);
             resetForm();
@@ -366,7 +364,7 @@ export default function CouponsPage() {
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Coupon
-        </Button> */}
+        </Button>
       </div>
 
       {/* Search */}
@@ -545,7 +543,7 @@ export default function CouponsPage() {
                 />
               </div>
 
-              {/* Expiry */}
+              {/* Expiry - FIXED: Now always uses string, never null */}
               <div className="grid gap-2">
                 <Label htmlFor="expiryDate">Expiry Date (Optional)</Label>
                 <Input
