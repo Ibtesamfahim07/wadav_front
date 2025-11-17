@@ -10,9 +10,32 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
+const DEFAULT_SETTINGS = {
+  siteTitle: '',
+  siteDescription: '',
+  affiliateDisclaimer: '',
+  socialMedia: {
+    facebook: '',
+    instagram: '',
+    twitter: '',
+  },
+  pageMeta: {
+    home: { title: '', description: '', keywords: '' },
+    stores: { title: '', description: '', keywords: '' },
+    blog: { title: '', description: '', keywords: '' },
+    about: { title: '', description: '', keywords: '' },
+    contact: { title: '', description: '', keywords: '' },
+  },
+  categoryContent: {
+    fashion: { description: '', featuredStores: [], relatedCategories: [] },
+    electronics: { description: '', featuredStores: [], relatedCategories: [] },
+    beauty: { description: '', featuredStores: [], relatedCategories: [] },
+  },
+};
+
 export default function SettingsPage() {
   const { siteSettings, updateSiteSettings } = useAdmin();
-  const [formData, setFormData] = useState(siteSettings);
+  const [formData, setFormData] = useState(siteSettings || DEFAULT_SETTINGS);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,7 +62,7 @@ export default function SettingsPage() {
               <Label htmlFor="siteTitle">Site Title</Label>
               <Input
                 id="siteTitle"
-                value={formData.siteTitle}
+                value={formData.siteTitle || ''}
                 onChange={(e) => setFormData({ ...formData, siteTitle: e.target.value })}
                 required
               />
@@ -48,7 +71,7 @@ export default function SettingsPage() {
               <Label htmlFor="siteDescription">Site Description</Label>
               <Textarea
                 id="siteDescription"
-                value={formData.siteDescription}
+                value={formData.siteDescription || ''}
                 onChange={(e) => setFormData({ ...formData, siteDescription: e.target.value })}
                 rows={3}
                 required
@@ -58,7 +81,7 @@ export default function SettingsPage() {
               <Label htmlFor="affiliateDisclaimer">Affiliate Disclaimer</Label>
               <Textarea
                 id="affiliateDisclaimer"
-                value={formData.affiliateDisclaimer}
+                value={formData.affiliateDisclaimer || ''}
                 onChange={(e) => setFormData({ ...formData, affiliateDisclaimer: e.target.value })}
                 rows={3}
                 required
@@ -77,7 +100,7 @@ export default function SettingsPage() {
               <Label htmlFor="facebook">Facebook URL</Label>
               <Input
                 id="facebook"
-                value={formData.socialMedia.facebook}
+                value={formData.socialMedia?.facebook || ''}
                 onChange={(e) => setFormData({
                   ...formData,
                   socialMedia: { ...formData.socialMedia, facebook: e.target.value }
@@ -89,7 +112,7 @@ export default function SettingsPage() {
               <Label htmlFor="instagram">Instagram URL</Label>
               <Input
                 id="instagram"
-                value={formData.socialMedia.instagram}
+                value={formData.socialMedia?.instagram || ''}
                 onChange={(e) => setFormData({
                   ...formData,
                   socialMedia: { ...formData.socialMedia, instagram: e.target.value }
@@ -101,7 +124,7 @@ export default function SettingsPage() {
               <Label htmlFor="twitter">Twitter URL</Label>
               <Input
                 id="twitter"
-                value={formData.socialMedia.twitter}
+                value={formData.socialMedia?.twitter || ''}
                 onChange={(e) => setFormData({
                   ...formData,
                   socialMedia: { ...formData.socialMedia, twitter: e.target.value }
@@ -125,12 +148,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Title</Label>
                   <Input
-                    value={formData.pageMeta.home.title}
+                    value={formData.pageMeta?.home?.title || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        home: { ...formData.pageMeta.home, title: e.target.value }
+                        home: { ...formData.pageMeta?.home, title: e.target.value }
                       }
                     })}
                   />
@@ -138,12 +161,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Description</Label>
                   <Textarea
-                    value={formData.pageMeta.home.description}
+                    value={formData.pageMeta?.home?.description || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        home: { ...formData.pageMeta.home, description: e.target.value }
+                        home: { ...formData.pageMeta?.home, description: e.target.value }
                       }
                     })}
                     rows={2}
@@ -152,12 +175,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Keywords</Label>
                   <Input
-                    value={formData.pageMeta.home.keywords}
+                    value={formData.pageMeta?.home?.keywords || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        home: { ...formData.pageMeta.home, keywords: e.target.value }
+                        home: { ...formData.pageMeta?.home, keywords: e.target.value }
                       }
                     })}
                   />
@@ -171,12 +194,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Title</Label>
                   <Input
-                    value={formData.pageMeta.stores.title}
+                    value={formData.pageMeta?.stores?.title || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        stores: { ...formData.pageMeta.stores, title: e.target.value }
+                        stores: { ...formData.pageMeta?.stores, title: e.target.value }
                       }
                     })}
                   />
@@ -184,12 +207,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Description</Label>
                   <Textarea
-                    value={formData.pageMeta.stores.description}
+                    value={formData.pageMeta?.stores?.description || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        stores: { ...formData.pageMeta.stores, description: e.target.value }
+                        stores: { ...formData.pageMeta?.stores, description: e.target.value }
                       }
                     })}
                     rows={2}
@@ -198,12 +221,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Keywords</Label>
                   <Input
-                    value={formData.pageMeta.stores.keywords}
+                    value={formData.pageMeta?.stores?.keywords || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        stores: { ...formData.pageMeta.stores, keywords: e.target.value }
+                        stores: { ...formData.pageMeta?.stores, keywords: e.target.value }
                       }
                     })}
                   />
@@ -217,12 +240,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Title</Label>
                   <Input
-                    value={formData.pageMeta.blog.title}
+                    value={formData.pageMeta?.blog?.title || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        blog: { ...formData.pageMeta.blog, title: e.target.value }
+                        blog: { ...formData.pageMeta?.blog, title: e.target.value }
                       }
                     })}
                   />
@@ -230,12 +253,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Description</Label>
                   <Textarea
-                    value={formData.pageMeta.blog.description}
+                    value={formData.pageMeta?.blog?.description || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        blog: { ...formData.pageMeta.blog, description: e.target.value }
+                        blog: { ...formData.pageMeta?.blog, description: e.target.value }
                       }
                     })}
                     rows={2}
@@ -244,12 +267,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Keywords</Label>
                   <Input
-                    value={formData.pageMeta.blog.keywords}
+                    value={formData.pageMeta?.blog?.keywords || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        blog: { ...formData.pageMeta.blog, keywords: e.target.value }
+                        blog: { ...formData.pageMeta?.blog, keywords: e.target.value }
                       }
                     })}
                   />
@@ -263,12 +286,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Title</Label>
                   <Input
-                    value={formData.pageMeta.about.title}
+                    value={formData.pageMeta?.about?.title || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        about: { ...formData.pageMeta.about, title: e.target.value }
+                        about: { ...formData.pageMeta?.about, title: e.target.value }
                       }
                     })}
                   />
@@ -276,12 +299,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Description</Label>
                   <Textarea
-                    value={formData.pageMeta.about.description}
+                    value={formData.pageMeta?.about?.description || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        about: { ...formData.pageMeta.about, description: e.target.value }
+                        about: { ...formData.pageMeta?.about, description: e.target.value }
                       }
                     })}
                     rows={2}
@@ -290,12 +313,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Keywords</Label>
                   <Input
-                    value={formData.pageMeta.about.keywords}
+                    value={formData.pageMeta?.about?.keywords || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        about: { ...formData.pageMeta.about, keywords: e.target.value }
+                        about: { ...formData.pageMeta?.about, keywords: e.target.value }
                       }
                     })}
                   />
@@ -309,12 +332,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Title</Label>
                   <Input
-                    value={formData.pageMeta.contact.title}
+                    value={formData.pageMeta?.contact?.title || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        contact: { ...formData.pageMeta.contact, title: e.target.value }
+                        contact: { ...formData.pageMeta?.contact, title: e.target.value }
                       }
                     })}
                   />
@@ -322,12 +345,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Meta Description</Label>
                   <Textarea
-                    value={formData.pageMeta.contact.description}
+                    value={formData.pageMeta?.contact?.description || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        contact: { ...formData.pageMeta.contact, description: e.target.value }
+                        contact: { ...formData.pageMeta?.contact, description: e.target.value }
                       }
                     })}
                     rows={2}
@@ -336,12 +359,12 @@ export default function SettingsPage() {
                 <div className="grid gap-2">
                   <Label>Keywords</Label>
                   <Input
-                    value={formData.pageMeta.contact.keywords}
+                    value={formData.pageMeta?.contact?.keywords || ''}
                     onChange={(e) => setFormData({
                       ...formData,
                       pageMeta: {
                         ...formData.pageMeta,
-                        contact: { ...formData.pageMeta.contact, keywords: e.target.value }
+                        contact: { ...formData.pageMeta?.contact, keywords: e.target.value }
                       }
                     })}
                   />
