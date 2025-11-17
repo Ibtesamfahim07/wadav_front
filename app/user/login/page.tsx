@@ -30,43 +30,42 @@ export default function UserLogin() {
   }, [user, isCheckingAuth, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError('');
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/user/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, password }),
-    });
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/user/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password }),
+      });
 
-    const resData = await response.json(); // ← raw response
+      const resData = await response.json();
 
-    if (response.ok) {
-      const backendData = resData.data; // ← { token, userId }
+      if (response.ok) {
+        const backendData = resData.data; // { token, userId }
 
-      const userData = {
-        id: backendData.userId,
-        name: name,
-      };
+        const userData = {
+          id: backendData.userId,
+          name: name,
+        };
 
-      localStorage.setItem('user_session', JSON.stringify(userData));
-      if (backendData.token) {
-        console.log('Saving backend token:', backendData.token);
-        localStorage.setItem('userToken', backendData.token);
-      }
+        localStorage.setItem('user_session', JSON.stringify(userData));
+        if (backendData.token) {
+          console.log('Saving backend token:', backendData.token);
+          localStorage.setItem('userToken', backendData.token);
+        }
 
-      window.dispatchEvent(new Event('user_session_updated'));
-      toast({ title: 'Welcome!', description: 'Logged in.' });
+        window.dispatchEvent(new Event('user_session_updated'));
+        toast({ title: 'Welcome!', description: 'Logged in.' });
 
-      setTimeout(() => {
-        setIsLoading(false);
-        router.replace('/user/dashboard');
-      }, 100);
-    } else {
+        setTimeout(() => {
+          setIsLoading(false);
+          router.replace('/user/dashboard');
+        }, 100);
+      } else {
         // Backend returned an error
-        const data = await response.json();
         let errorMessage = 'Invalid username or password';
 
         if (response.status === 401) {
@@ -74,9 +73,9 @@ export default function UserLogin() {
         } else if (response.status === 404) {
           errorMessage = 'User not found. Please check your username.';
         } else if (response.status === 400) {
-          errorMessage = data.error || data.message || 'Please enter valid credentials.';
+          errorMessage = resData.error || resData.message || 'Please enter valid credentials.';
         } else {
-          errorMessage = data.error || data.message || 'Login failed. Please try again.';
+          errorMessage = resData.error || resData.message || 'Login failed. Please try again.';
         }
 
         setError(errorMessage);
@@ -91,20 +90,32 @@ export default function UserLogin() {
       console.error('Backend login error:', error);
 
       // Backend not available - try local auth as fallback
-      const success = login(name, password);
+      try {
+        const success = await login(name, password); // ← FIXED: Added await
 
-      if (success) {
-        toast({
-          title: 'Welcome!',
-          description: 'Logged in with local credentials.',
-        });
+        if (success) {
+          toast({
+            title: 'Welcome!',
+            description: 'Logged in with local credentials.',
+          });
 
-        setTimeout(() => {
+          setTimeout(() => {
+            setIsLoading(false);
+            router.replace('/user/dashboard');
+          }, 100);
+        } else {
+          const errorMessage = 'Cannot connect to server and invalid local credentials.';
+          setError(errorMessage);
+          toast({
+            title: 'Login Failed',
+            description: errorMessage,
+            variant: 'destructive',
+          });
           setIsLoading(false);
-          router.replace('/user/dashboard');
-        }, 100);
-      } else {
-        const errorMessage = 'Cannot connect to server and invalid local credentials.';
+        }
+      } catch (loginError) {
+        console.error('Local login error:', loginError);
+        const errorMessage = 'Login failed. Please try again.';
         setError(errorMessage);
         toast({
           title: 'Login Failed',
