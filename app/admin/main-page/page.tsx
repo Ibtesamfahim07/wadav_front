@@ -15,14 +15,14 @@ export default function MainPage() {
   const { homePageSettings, updateHomePageSettings, stores, coupons, blogPosts } = useAdmin();
   const { toast } = useToast();
   
-  const [heroTitle, setHeroTitle] = useState(homePageSettings.heroTitle);
-  const [heroDescription, setHeroDescription] = useState(homePageSettings.heroDescription);
-  const [maxCouponsDisplay, setMaxCouponsDisplay] = useState(homePageSettings.maxCouponsDisplay);
-  const [selectedFeaturedStores, setSelectedFeaturedStores] = useState<string[]>(homePageSettings.featuredStoreIds);
-  const [selectedTopStores, setSelectedTopStores] = useState<string[]>(homePageSettings.topStoreIds);
-  const [selectedPopularStores, setSelectedPopularStores] = useState<string[]>(homePageSettings.popularStoreIds);
-  const [selectedFeaturedCoupons, setSelectedFeaturedCoupons] = useState<string[]>(homePageSettings.featuredCouponIds);
-  const [selectedFeaturedBlogPosts, setSelectedFeaturedBlogPosts] = useState<string[]>(homePageSettings.featuredBlogPostIds);
+  const [heroTitle, setHeroTitle] = useState(homePageSettings?.heroTitle || '');
+  const [heroDescription, setHeroDescription] = useState(homePageSettings?.heroDescription || '');
+  const [maxCouponsDisplay, setMaxCouponsDisplay] = useState(homePageSettings?.maxCouponsDisplay || 10);
+  const [selectedFeaturedStores, setSelectedFeaturedStores] = useState<string[]>(homePageSettings?.featuredStoreIds || []);
+  const [selectedTopStores, setSelectedTopStores] = useState<string[]>(homePageSettings?.topStoreIds || []);
+  const [selectedPopularStores, setSelectedPopularStores] = useState<string[]>(homePageSettings?.popularStoreIds || []);
+  const [selectedFeaturedCoupons, setSelectedFeaturedCoupons] = useState<string[]>(homePageSettings?.featuredCouponIds || []);
+  const [selectedFeaturedBlogPosts, setSelectedFeaturedBlogPosts] = useState<string[]>(homePageSettings?.featuredBlogPostIds || []);
 
   const handleSave = () => {
     updateHomePageSettings({
@@ -122,7 +122,7 @@ export default function MainPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-            {coupons.map((coupon) => (
+            {coupons?.map((coupon) => (
               <div key={coupon.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`coupon-${coupon.id}`}
@@ -144,7 +144,7 @@ export default function MainPage() {
         </CardContent>
       </Card>
 
-      {/* Featured Articles Section - FIXED: Use postId instead of id */}
+      {/* Featured Articles Section */}
       <Card>
         <CardHeader>
           <CardTitle>Featured Articles</CardTitle>
@@ -152,7 +152,7 @@ export default function MainPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-            {blogPosts.map((post) => (
+            {blogPosts?.map((post) => (
               <div key={post.postId} className="flex items-center space-x-2">
                 <Checkbox
                   id={`blog-${post.postId}`}
@@ -182,7 +182,7 @@ export default function MainPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-            {stores.map((store) => (
+            {stores?.map((store) => (
               <div key={store.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`featured-${store.id}`}
@@ -212,7 +212,7 @@ export default function MainPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-            {stores.map((store) => (
+            {stores?.map((store) => (
               <div key={store.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`top-${store.id}`}
@@ -242,7 +242,7 @@ export default function MainPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-            {stores.map((store) => (
+            {stores?.map((store) => (
               <div key={store.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`popular-${store.id}`}
