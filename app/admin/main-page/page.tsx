@@ -144,7 +144,7 @@ export default function MainPage() {
         </CardContent>
       </Card>
 
-      {/* Featured Articles Section */}
+      {/* Featured Articles Section - FIXED: Use postId instead of id */}
       <Card>
         <CardHeader>
           <CardTitle>Featured Articles</CardTitle>
@@ -153,14 +153,14 @@ export default function MainPage() {
         <CardContent>
           <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
             {blogPosts.map((post) => (
-              <div key={post.id} className="flex items-center space-x-2">
+              <div key={post.postId} className="flex items-center space-x-2">
                 <Checkbox
-                  id={`blog-${post.id}`}
-                  checked={selectedFeaturedBlogPosts.includes(post.id)}
-                  onCheckedChange={() => toggleBlogPost(post.id)}
+                  id={`blog-${post.postId}`}
+                  checked={selectedFeaturedBlogPosts.includes(String(post.postId))}
+                  onCheckedChange={() => toggleBlogPost(String(post.postId))}
                 />
                 <label
-                  htmlFor={`blog-${post.id}`}
+                  htmlFor={`blog-${post.postId}`}
                   className="text-sm font-medium leading-none cursor-pointer"
                 >
                   {post.title}
