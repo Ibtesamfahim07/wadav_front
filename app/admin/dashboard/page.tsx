@@ -1,3 +1,4 @@
+//app/admin/dashboard/page.tsx
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,15 +25,15 @@ const Dashboard = () => {
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   
-  // Create user form state
+  // Form state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [storeId, setStoreId] = useState('');
   
   const router = useRouter();
   const { toast } = useToast();
 
+  // === AUTH CHECK ===
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const loggedIn = localStorage.getItem('admin_logged_in');
@@ -44,6 +45,7 @@ const Dashboard = () => {
     }
   }, [router]);
 
+  // === LOGOUT ===
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('admin_logged_in');
@@ -52,10 +54,10 @@ const Dashboard = () => {
     }
   };
 
+  // === CREATE USER ===
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
+
     if (password !== confirmPassword) {
       toast({
         title: 'Error',
@@ -77,36 +79,24 @@ const Dashboard = () => {
     setIsCreatingUser(true);
 
     try {
-      const userData = {
-        name: username,
-        password,
-        ...(storeId && { storeId }),
-      };
+      const userData = { name: username, password };
 
-      // Direct API call to backend - NO AUTH for now
       const response = await fetch('http://localhost:5000/api/admin/create-user-simple', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
       });
 
       const data = await response.json();
 
-      console.log('Create user response:', data);
-
       if (response.ok && data.success) {
         toast({
           title: 'Success',
-          description: 'User created successfully!',
+          description: 'User created! They can add stores from their dashboard.',
         });
-        
-        // Reset form and close modal
         setUsername('');
         setPassword('');
         setConfirmPassword('');
-        setStoreId('');
         setShowCreateUserModal(false);
       } else {
         toast({
@@ -116,7 +106,6 @@ const Dashboard = () => {
         });
       }
     } catch (error: any) {
-      console.error('Create user error:', error);
       toast({
         title: 'Error',
         description: 'Failed to connect to server',
@@ -127,6 +116,7 @@ const Dashboard = () => {
     }
   };
 
+  // === STATS ===
   const activeCoupons = coupons.filter(c => c.active).length;
   const totalClicks = coupons.reduce((sum, c) => sum + (c.clickCount || 0), 0);
   const totalUsage = coupons.reduce((sum, c) => sum + (c.usageCount || 0), 0);
@@ -174,17 +164,17 @@ const Dashboard = () => {
   return (
     <>
       <div className="space-y-6 p-8">
-        {/* Header with Actions */}
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold">Dashboard</h2>
             <p className="text-muted-foreground">Overview of your coupon website</p>
           </div>
           <div className="flex gap-2">
-            {/* <Button onClick={() => setShowCreateUserModal(true)}>
+            <Button onClick={() => setShowCreateUserModal(true)}>
               <UserPlus className="mr-2 h-4 w-4" />
               Create User
-            </Button> */}
+            </Button>
             <Button variant="outline" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
@@ -208,7 +198,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Top Performing Coupons */}
+        {/* Top Coupons */}
         <Card>
           <CardHeader>
             <CardTitle>Top Performing Coupons</CardTitle>
@@ -247,7 +237,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Create User Modal */}
+      {/* === CREATE USER MODAL === */}
       {showCreateUserModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md">
@@ -274,6 +264,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreateUser} className="space-y-4">
+                {/* Username */}
                 <div className="space-y-2">
                   <Label htmlFor="username">Username *</Label>
                   <Input
@@ -286,6 +277,7 @@ const Dashboard = () => {
                   />
                 </div>
 
+                {/* Password */}
                 <div className="space-y-2">
                   <Label htmlFor="password">Password *</Label>
                   <Input
@@ -301,6 +293,7 @@ const Dashboard = () => {
                   <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
                 </div>
 
+                {/* Confirm Password */}
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password *</Label>
                   <Input
@@ -314,23 +307,17 @@ const Dashboard = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="storeId">Store ID (Optional)</Label>
-                  <Input
-                    id="storeId"
-                    placeholder="Enter store ID"
-                    value={storeId}
-                    onChange={(e) => setStoreId(e.target.value)}
-                    disabled={isCreatingUser}
-                  />
+                {/* Info Note */}
+                <div className="space-y-2 p-3 bg-muted rounded-lg">
+                  <Label className="text-sm font-medium">Note</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Users can create and manage their own stores from the user dashboard after logging in.
+                  </p>
                 </div>
 
+                {/* Buttons */}
                 <div className="flex gap-2">
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={isCreatingUser}
-                  >
+                  <Button type="submit" className="flex-1" disabled={isCreatingUser}>
                     {isCreatingUser ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

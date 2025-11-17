@@ -2,8 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAdmin } from '@/contexts/AdminContext';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
@@ -27,20 +26,105 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
+// ---------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------
+type Store = {
+  id: string;
+  name: string;
+  logo: string;
+  url: string;
+  category: string;
+};
+
+type CouponFromAPI = {
+  id: string;
+  code: string;
+  title: string;
+  discount: string;
+  description: string;
+  expiryDate?: string | null;
+  active: boolean;
+  verified: boolean;
+  usageCount: number;
+  clickCount: number;
+  type: 'code' | 'link';
+  storeId: string;
+  storeRef: {
+    id: string;
+    name: string;
+    logo: string;
+    url: string;
+    category: string;
+  };
+};
+
+type Coupon = CouponFromAPI & {
+  store: string;
+  storeLogo: string;
+  storeUrl: string;
+  category: string;
+};
+
+// ---------------------------------------------------------------------
+// API helpers
+// ---------------------------------------------------------------------
+const API_BASE = 'http://localhost:5000/api';
+
+const API = {
+  coupons: `${API_BASE}/admin/coupons`,
+  stores: `${API_BASE}/admin/stores`,
+};
+
+const fetchJSON = async (url: string, opts?: RequestInit) => {
+  console.log('[Frontend] Fetching:', url);
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...opts?.headers },
+  });
+  const data = await res.json();
+  console.log('[Frontend] Response:', data);
+  if (!res.ok) throw new Error(data.message ?? 'Request failed');
+  return data;
+};
+
+// Helper to format date
+const formatDate = (dateStr?: string | null) => {
+  if (!dateStr) return 'No expiry';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+};
+
+// ---------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------
 export default function CouponsPage() {
-  const { coupons, stores, addCoupon, updateCoupon, deleteCoupon } = useAdmin();
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [stores, setStores] = useState<Store[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState<any>(null);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
-  const prefillStoreId = searchParams.get('storeId');
+  const prefillStoreId = searchParams?.get('storeId');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<Coupon, 'id' | 'clickCount' | 'usageCount' | 'storeId' | 'storeRef'> & {
+    usageCount: number;
+  }>({
     code: '',
     title: '',
     discount: '',
@@ -53,15 +137,55 @@ export default function CouponsPage() {
     active: true,
     verified: true,
     usageCount: 0,
-    type: 'code' as 'code' | 'link',
+    type: 'code',
   });
 
-  // === PRE-FILL STORE IF COMING FROM USERS PAGE ===
+  // Load stores & coupons
   useEffect(() => {
-    if (prefillStoreId && !editingCoupon) {
-      const store = stores.find(s => s.id === prefillStoreId);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        console.log('[Frontend] Loading coupons and stores...');
+        
+        const [cRes, sRes] = await Promise.all([
+          fetchJSON(API.coupons),
+          fetchJSON(API.stores),
+        ]);
+
+        // Flatten coupon + storeRef → UI shape
+        const flatCoupons: Coupon[] = (cRes.data ?? []).map((c: CouponFromAPI) => ({
+          ...c,
+          store: c.storeRef.name,
+          storeLogo: c.storeRef.logo,
+          storeUrl: c.storeRef.url,
+          category: c.storeRef.category,
+        }));
+
+        console.log('[Frontend] Loaded:', flatCoupons.length, 'coupons');
+
+        setCoupons(flatCoupons);
+        setStores(sRes.data ?? []);
+      } catch (e: any) {
+        console.error('[Frontend] Load error:', e);
+        toast({ 
+          title: 'Error loading data', 
+          description: e.message, 
+          variant: 'destructive' 
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [toast]);
+
+  // Pre-fill when coming from a store page
+  useEffect(() => {
+    if (prefillStoreId && !editingCoupon && stores.length) {
+      const store = stores.find((s) => s.id === prefillStoreId);
       if (store) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           store: store.name,
           storeLogo: store.logo,
@@ -69,19 +193,20 @@ export default function CouponsPage() {
           category: store.category,
         }));
         setIsDialogOpen(true);
-        // Clean URL
-        router.replace('/admin/coupons', undefined);
       }
     }
-  }, [prefillStoreId, stores, editingCoupon, router]);
+  }, [prefillStoreId, stores, editingCoupon]);
 
-  const filteredCoupons = coupons.filter(c =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.code.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filtering
+  const filteredCoupons = coupons.filter(
+    (c) =>
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.store.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleEdit = (coupon: any) => {
+  // Handlers
+  const handleEdit = (coupon: Coupon) => {
     setEditingCoupon(coupon);
     setFormData({
       code: coupon.code,
@@ -92,62 +217,37 @@ export default function CouponsPage() {
       storeLogo: coupon.storeLogo,
       storeUrl: coupon.storeUrl,
       category: coupon.category,
-      expiryDate: coupon.expiryDate || '',
-      active: coupon.active ?? true,
-      verified: coupon.verified ?? false,
-      usageCount: coupon.usageCount || 0,
-      type: coupon.type || 'code',
+      expiryDate: coupon.expiryDate ? coupon.expiryDate.split('T')[0] : '',
+      active: coupon.active,
+      verified: coupon.verified,
+      usageCount: coupon.usageCount,
+      type: coupon.type,
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this coupon?')) {
-      deleteCoupon(id);
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    try {
+      await fetchJSON(`${API.coupons}/${id}`, { method: 'DELETE' });
+      setCoupons((prev) => prev.filter((c) => c.id !== id));
       toast({ title: 'Coupon deleted' });
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
     }
   };
 
   const handleStoreChange = (storeName: string) => {
-    const store = stores.find(s => s.name === storeName);
+    const store = stores.find((s) => s.name === storeName);
     if (store) {
-      setFormData({
-        ...formData,
+      setFormData((prev) => ({
+        ...prev,
         store: store.name,
         storeLogo: store.logo,
         storeUrl: store.url,
         category: store.category,
-      });
+      }));
     }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.title || !formData.code || !formData.store || !formData.discount) {
-      toast({ title: 'Error', description: 'Title, Code, Store, and Discount are required', variant: 'destructive' });
-      return;
-    }
-
-    const couponData = {
-      ...formData,
-      clickCount: editingCoupon?.clickCount || 0,
-    };
-
-    if (editingCoupon) {
-      updateCoupon(editingCoupon.id, couponData);
-      toast({ title: 'Coupon updated' });
-    } else {
-      addCoupon({
-        id: Date.now().toString(),
-        ...couponData,
-      });
-      toast({ title: 'Coupon added successfully' });
-    }
-
-    setIsDialogOpen(false);
-    setEditingCoupon(null);
-    resetForm();
   };
 
   const resetForm = () => {
@@ -168,6 +268,87 @@ export default function CouponsPage() {
     });
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.title || !formData.code || !formData.store || !formData.discount) {
+      toast({
+        title: 'Error',
+        description: 'Title, Code, Store, and Discount are required',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const store = stores.find((s) => s.name === formData.store);
+    if (!store) {
+      toast({ title: 'Error', description: 'Selected store not found', variant: 'destructive' });
+      return;
+    }
+
+    const payload = {
+      title: formData.title,
+      code: formData.code,
+      discount: formData.discount,
+      description: formData.description,
+      expiryDate: formData.expiryDate || null,
+      active: formData.active,
+      verified: formData.verified,
+      usageCount: formData.usageCount,
+      type: formData.type,
+      storeId: store.id,
+    };
+
+    try {
+      let newCoupon: CouponFromAPI;
+      if (editingCoupon) {
+        const res = await fetchJSON(`${API.coupons}/${editingCoupon.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+        newCoupon = res.data;
+        toast({ title: 'Coupon updated' });
+      } else {
+        const res = await fetchJSON(API.coupons, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        newCoupon = res.data;
+        toast({ title: 'Coupon added successfully' });
+      }
+
+      // Flatten again for UI
+      const flat: Coupon = {
+        ...newCoupon,
+        store: newCoupon.storeRef.name,
+        storeLogo: newCoupon.storeRef.logo,
+        storeUrl: newCoupon.storeRef.url,
+        category: newCoupon.storeRef.category,
+      };
+
+      setCoupons((prev) =>
+        editingCoupon
+          ? prev.map((c) => (c.id === editingCoupon.id ? flat : c))
+          : [...prev, flat]
+      );
+
+      setIsDialogOpen(false);
+      setEditingCoupon(null);
+      resetForm();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    }
+  };
+
+  // UI
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-muted-foreground">Loading coupons...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -176,7 +357,7 @@ export default function CouponsPage() {
           <h2 className="text-3xl font-bold">Manage Coupons</h2>
           <p className="text-muted-foreground">Add, edit, or delete coupons</p>
         </div>
-        <Button
+        {/* <Button
           onClick={() => {
             setEditingCoupon(null);
             resetForm();
@@ -185,7 +366,7 @@ export default function CouponsPage() {
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Coupon
-        </Button>
+        </Button> */}
       </div>
 
       {/* Search */}
@@ -199,44 +380,58 @@ export default function CouponsPage() {
         />
       </div>
 
-      {/* Coupons Table */}
-      <div className="border rounded-lg">
+      {/* Coupons Table - WITH ALL FIELDS */}
+      <div className="border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Store</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Discount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Clicks</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[200px]">Store</TableHead>
+              <TableHead className="w-[200px]">Title</TableHead>
+              <TableHead className="w-[120px]">Code</TableHead>
+              <TableHead className="w-[100px]">Discount</TableHead>
+              <TableHead className="w-[120px]">Expiry Date</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[250px]">Description</TableHead>
+              <TableHead className="text-right w-[120px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredCoupons.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   No coupons found
                 </TableCell>
               </TableRow>
             ) : (
               filteredCoupons.map((coupon) => (
                 <TableRow key={coupon.id}>
-                  <TableCell className="font-medium">{coupon.title}</TableCell>
-                  <TableCell>{coupon.store}</TableCell>
+                  <TableCell className="font-medium">{coupon.store}</TableCell>
+                  <TableCell>{coupon.title}</TableCell>
                   <TableCell>
-                    <code className="bg-muted px-2 py-1 rounded text-xs">{coupon.code}</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs">
+                      {coupon.code}
+                    </code>
                   </TableCell>
-                  <TableCell>{coupon.discount}</TableCell>
+                  <TableCell className="font-semibold text-green-600">
+                    {coupon.discount}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {formatDate(coupon.expiryDate)}
+                  </TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      coupon.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        coupon.active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
                       {coupon.active ? 'Active' : 'Inactive'}
                     </span>
                   </TableCell>
-                  <TableCell>{coupon.clickCount || 0}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground max-w-[250px] truncate">
+                    {coupon.description || '—'}
+                  </TableCell>
                   <TableCell className="text-right space-x-1">
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(coupon)}>
                       <Pencil className="h-4 w-4" />
@@ -263,7 +458,6 @@ export default function CouponsPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
-
               {/* Store Selector */}
               <div className="grid gap-2">
                 <Label htmlFor="store">Store</Label>
@@ -322,7 +516,12 @@ export default function CouponsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="type">Coupon Type</Label>
-                  <Select value={formData.type} onValueChange={(v: 'code' | 'link') => setFormData({ ...formData, type: v })}>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(v: 'code' | 'link') =>
+                      setFormData({ ...formData, type: v })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -382,9 +581,7 @@ export default function CouponsPage() {
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit">
-                {editingCoupon ? 'Update' : 'Add'} Coupon
-              </Button>
+              <Button type="submit">{editingCoupon ? 'Update' : 'Add'} Coupon</Button>
             </DialogFooter>
           </form>
         </DialogContent>

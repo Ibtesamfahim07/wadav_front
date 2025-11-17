@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users } from 'lucide-react';
+import { Users, User, FolderOpen, Tags, MessageSquare } from 'lucide-react';
 import {
   LayoutDashboard,
   Tag,
@@ -30,15 +30,22 @@ import { useToast } from '@/hooks/use-toast';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useRouter } from 'next/navigation';
 
-const menuItems = [
+const mainMenuItems = [
   { title: 'Dashboard', url: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Main Page', url: '/admin/main-page', icon: Home },
   { title: 'Coupons', url: '/admin/coupons', icon: Tag },
   { title: 'Stores', url: '/admin/stores', icon: Store },
   { title: 'Categories', url: '/admin/categories', icon: FolderTree },
-  { title: 'Blog Posts', url: '/admin/blog-posts', icon: FileText },
   { title: 'Users', url: '/admin/users', icon: Users },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
+];
+
+const blogMenuItems = [
+  { title: 'Blog Posts', url: '/admin/blog-posts', icon: FileText },
+  { title: 'Authors', url: '/admin/blog-authors', icon: User },
+  { title: 'Categories', url: '/admin/blog-categories', icon: FolderOpen },
+  { title: 'Tags', url: '/admin/blog-tags', icon: Tags },
+  { title: 'Comments', url: '/admin/blog-comments', icon: MessageSquare }, // ← NEW
 ];
 
 export function AdminSidebar() {
@@ -50,6 +57,7 @@ export function AdminSidebar() {
 
   const handleLogout = () => {
     localStorage.removeItem('admin_logged_in');
+    localStorage.removeItem('admin_token');
     toast({
       title: 'Logged out',
       description: 'You have been logged out successfully',
@@ -73,7 +81,30 @@ export function AdminSidebar() {
           <SidebarGroupLabel>Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {mainMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <Link
+                      href={item.url}
+                      className={pathname === item.url
+                        ? 'bg-muted text-primary font-medium'
+                        : 'hover:bg-muted/50'}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!isCollapsed && <span>{item.title}</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Blog Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {blogMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link

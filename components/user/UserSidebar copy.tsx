@@ -1,9 +1,9 @@
-// app/components/user/usersidebar.tsx
+// components/user/UserSidebar.tsx
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { LogOut, Plus, Tag, Store, List, Ticket, FileText } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { LogOut, Plus, Tag, Store } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -19,22 +19,15 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/components/user/usercontext';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useEffect } from 'react';
 
 export function UserSidebar() {
-  const { user, logout, getUserStores, refreshStore } = useUser();
-  const stores = getUserStores();
+  const { user, logout, getUserStore } = useUser();
+  const store = getUserStore();               // <-- real store from DB
   const { state } = useSidebar();
   const router = useRouter();
   const { toast } = useToast();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const view = searchParams.get('view') || 'my-stores';
   const isCollapsed = state === 'collapsed';
-
-  useEffect(() => {
-    if (user) refreshStore();
-  }, [user, refreshStore]);
 
   const handleLogout = () => {
     logout();
@@ -45,6 +38,7 @@ export function UserSidebar() {
   return (
     <Sidebar className={isCollapsed ? 'w-14' : 'w-60'}>
       <SidebarContent>
+        {/* Logo/Brand */}
         <div className="p-4 border-b">
           {!isCollapsed ? (
             <div>
@@ -58,6 +52,7 @@ export function UserSidebar() {
           )}
         </div>
 
+        {/* User Info */}
         {user && !isCollapsed && (
           <div className="p-4 border-b bg-muted/50">
             <div className="flex items-center gap-3">
@@ -68,73 +63,62 @@ export function UserSidebar() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user.name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {store?.name ?? 'No store'}
+                </p>
               </div>
             </div>
           </div>
         )}
 
+        {/* Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={view === 'add-store'}>
-                  <Link href="/user/dashboard?view=add-store">
-                    <Plus className="h-4 w-4" />
-                    {!isCollapsed && <span>Add Store</span>}
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/user/dashboard'}
+                >
+                  <Link href="/user/dashboard">
+                    {store ? (
+                      <>
+                        <Tag className="h-4 w-4" />
+                        {!isCollapsed && <span>My Coupons</span>}
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4" />
+                        {!isCollapsed && <span>Add Store</span>}
+                      </>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={view === 'my-stores'}>
-                  <Link href="/user/dashboard?view=my-stores">
-                    <Store className="h-4 w-4" />
-                    {!isCollapsed && <span>My Stores</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={view === 'all-stores'}>
-                  <Link href="/user/dashboard?view=all-stores">
-                    <List className="h-4 w-4" />
-                    {!isCollapsed && <span>All Stores</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={view === 'seo-store'}>
-                  <Link href="/user/dashboard?view=seo-store">
-                    <FileText className="h-4 w-4" />
-                    {!isCollapsed && <span>SEO Store Page</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={view === 'add-coupon'}>
-                  <Link href="/user/dashboard?view=add-coupon">
-                    <Ticket className="h-4 w-4" />
-                    {!isCollapsed && <span>Add Coupon</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={view === 'my-coupons'}>
-                  <Link href="/user/dashboard?view=my-coupons">
-                    <Tag className="h-4 w-4" />
-                    {!isCollapsed && <span>My Coupons</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {/* Show store name when it exists */}
+              {store && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <div className="flex items-center gap-2 cursor-default">
+                      <Store className="h-4 w-4" />
+                      {!isCollapsed && (
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground">Store</p>
+                          <p className="text-sm font-medium truncate">{store.name}</p>
+                        </div>
+                      )}
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
+      {/* Logout Button */}
       <SidebarFooter className="p-4 border-t">
         <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />

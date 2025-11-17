@@ -287,7 +287,7 @@ export default function UsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Username</TableHead>
-              <TableHead>Store ID</TableHead>
+              {/* <TableHead>Store ID</TableHead> */}
               <TableHead>Created At</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -306,9 +306,9 @@ export default function UsersPage() {
               filteredUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
+                  {/* <TableCell className="text-muted-foreground">
                     {user.storeId || '-'}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell className="text-muted-foreground">
                     {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
                   </TableCell>
@@ -391,17 +391,17 @@ export default function UsersPage() {
               )}
               
               <div className="grid gap-2">
-                <Label htmlFor="storeId">Store ID (Optional)</Label>
+                {/* <Label htmlFor="storeId">Store ID (Optional)</Label>
                 <Input
                   id="storeId"
                   placeholder="Leave empty or enter store ID"
                   value={formData.storeId}
                   onChange={(e) => setFormData({ ...formData, storeId: e.target.value })}
                   disabled={isSubmitting}
-                />
-                <p className="text-xs text-muted-foreground">
+                /> */}
+                {/* <p className="text-xs text-muted-foreground">
                   Link this user to a specific store
-                </p>
+                </p> */}
               </div>
             </div>
             <DialogFooter>

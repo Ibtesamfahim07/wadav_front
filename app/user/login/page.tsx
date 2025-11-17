@@ -1,30 +1,137 @@
 // app/user/login/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser } from '@/components/user/usercontext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 export default function UserLogin() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { user, isLoading: isCheckingAuth, login } = useUser();
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (login(name, password)) {
-      toast({ title: 'Welcome!' });
-      router.push('/user/dashboard');
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (!isCheckingAuth && user) {
+      router.replace('/user/dashboard');
+    }
+  }, [user, isCheckingAuth, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError('');
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/user/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, password }),
+    });
+
+    const resData = await response.json(); // ← raw response
+
+    if (response.ok) {
+      const backendData = resData.data; // ← { token, userId }
+
+      const userData = {
+        id: backendData.userId,
+        name: name,
+      };
+
+      localStorage.setItem('user_session', JSON.stringify(userData));
+      if (backendData.token) {
+        console.log('Saving backend token:', backendData.token);
+        localStorage.setItem('userToken', backendData.token);
+      }
+
+      window.dispatchEvent(new Event('user_session_updated'));
+      toast({ title: 'Welcome!', description: 'Logged in.' });
+
+      setTimeout(() => {
+        setIsLoading(false);
+        router.replace('/user/dashboard');
+      }, 100);
     } else {
-      toast({ title: 'Invalid login', variant: 'destructive' });
+        // Backend returned an error
+        const data = await response.json();
+        let errorMessage = 'Invalid username or password';
+
+        if (response.status === 401) {
+          errorMessage = 'Invalid username or password. Please try again.';
+        } else if (response.status === 404) {
+          errorMessage = 'User not found. Please check your username.';
+        } else if (response.status === 400) {
+          errorMessage = data.error || data.message || 'Please enter valid credentials.';
+        } else {
+          errorMessage = data.error || data.message || 'Login failed. Please try again.';
+        }
+
+        setError(errorMessage);
+        toast({
+          title: 'Login Failed',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Backend login error:', error);
+
+      // Backend not available - try local auth as fallback
+      const success = login(name, password);
+
+      if (success) {
+        toast({
+          title: 'Welcome!',
+          description: 'Logged in with local credentials.',
+        });
+
+        setTimeout(() => {
+          setIsLoading(false);
+          router.replace('/user/dashboard');
+        }, 100);
+      } else {
+        const errorMessage = 'Cannot connect to server and invalid local credentials.';
+        setError(errorMessage);
+        toast({
+          title: 'Login Failed',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+      }
     }
   };
+
+  // Show loading while checking auth status
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't show login form if already logged in
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -32,14 +139,70 @@ export default function UserLogin() {
         <CardHeader>
           <CardTitle>User Login</CardTitle>
           <CardDescription>
-            Use: <code className="bg-muted px-1">john</code> / <code className="bg-muted px-1">123</code>
+            Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input placeholder="Username" value={name} onChange={e => setName(e.target.value)} required />
-            <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-            <Button type="submit" className="w-full">Login as User</Button>
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">
+                Username
+              </label>
+              <Input
+                id="username"
+                placeholder="Enter your username"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setError('');
+                }}
+                required
+                disabled={isLoading}
+                autoComplete="username"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError('');
+                }}
+                required
+                disabled={isLoading}
+                autoComplete="current-password"
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                'Login as User'
+              )}
+            </Button>
+
+            <div className="text-sm text-muted-foreground text-center mt-4">
+              <p>Demo credentials (fallback):</p>
+              <p className="font-mono text-xs mt-1">john / 123 | jane / 123 | mike / 123</p>
+            </div>
           </form>
         </CardContent>
       </Card>

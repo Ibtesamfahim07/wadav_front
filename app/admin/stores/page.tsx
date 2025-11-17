@@ -1,11 +1,10 @@
 // app/admin/stores/page.tsx
 'use client';
 
-import { useState } from 'react';
-import { useAdmin } from '@/contexts/AdminContext';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -26,11 +25,15 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 
+const API_BASE = 'http://localhost:5000/api';
+
 export default function StoresPage() {
-  const { stores, addStore, updateStore, deleteStore } = useAdmin();
+  const [stores, setStores] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStore, setEditingStore] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -56,6 +59,50 @@ export default function StoresPage() {
     benefits: '',
     whyUseCoupons: '',
   });
+
+  // Fetch stores on mount
+  useEffect(() => {
+    fetchStores();
+  }, []);
+
+  const fetchStores = async () => {
+    try {
+      setFetchLoading(true);
+      const token = localStorage.getItem('adminToken');
+      
+      console.log('[Admin Stores] Fetching with token:', token ? 'exists' : 'missing');
+      
+      const res = await fetch(`${API_BASE}/admin/stores`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('[Admin Stores] Response status:', res.status);
+      const data = await res.json();
+      console.log('[Admin Stores] Response data:', data);
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to fetch stores');
+      }
+
+      // The backend returns data in { success: true, data: [...stores] }
+      const storesData = Array.isArray(data.data) ? data.data : [];
+      console.log('[Admin Stores] Setting stores:', storesData.length);
+      setStores(storesData);
+      
+    } catch (error: any) {
+      console.error('[Admin Stores] Fetch error:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to load stores',
+        variant: 'destructive',
+      });
+    } finally {
+      setFetchLoading(false);
+    }
+  };
 
   const filteredStores = stores.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,30 +137,102 @@ export default function StoresPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this store?')) {
-      deleteStore(id);
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this store? All associated coupons will also be deleted.')) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      
+      const res = await fetch(`${API_BASE}/admin/stores/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete store');
+      }
+
       toast({ title: 'Store deleted successfully' });
+      await fetchStores();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingStore) {
-      updateStore(editingStore.id, formData);
-      toast({ title: 'Store updated successfully' });
-    } else {
-      addStore({
-        id: Date.now().toString(),
-        ...formData,
-      });
-      toast({ title: 'Store added successfully' });
+
+    // Validate required fields
+    if (!formData.name.trim()) {
+      toast({ title: 'Error', description: 'Store name is required', variant: 'destructive' });
+      return;
+    }
+    if (!formData.slug.trim()) {
+      toast({ title: 'Error', description: 'Slug is required', variant: 'destructive' });
+      return;
+    }
+    if (!formData.url.trim()) {
+      toast({ title: 'Error', description: 'Store URL is required', variant: 'destructive' });
+      return;
+    }
+    if (!formData.category.trim()) {
+      toast({ title: 'Error', description: 'Category is required', variant: 'destructive' });
+      return;
+    }
+    if (!formData.description.trim()) {
+      toast({ title: 'Error', description: 'Description is required', variant: 'destructive' });
+      return;
     }
 
-    setIsDialogOpen(false);
-    setEditingStore(null);
-    resetForm();
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const url = editingStore
+        ? `${API_BASE}/admin/stores/${editingStore.id}`
+        : `${API_BASE}/admin/stores`;
+
+      const res = await fetch(url, {
+        method: editingStore ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to save store');
+      }
+
+      toast({
+        title: editingStore ? 'Store updated successfully!' : 'Store created successfully!',
+      });
+
+      setIsDialogOpen(false);
+      setEditingStore(null);
+      resetForm();
+      await fetchStores();
+    } catch (error: any) {
+      console.error('Submit error:', error);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -187,6 +306,14 @@ export default function StoresPage() {
     });
   };
 
+  if (fetchLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -194,14 +321,14 @@ export default function StoresPage() {
           <h2 className="text-3xl font-bold">Manage Stores</h2>
           <p className="text-muted-foreground">Add, edit, or delete stores</p>
         </div>
-        <Button onClick={() => {
+        {/* <Button onClick={() => {
           setEditingStore(null);
           resetForm();
           setIsDialogOpen(true);
         }}>
           <Plus className="h-4 w-4 mr-2" />
           Add Store
-        </Button>
+        </Button> */}
       </div>
 
       <div className="relative">
@@ -220,26 +347,36 @@ export default function StoresPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Owner</TableHead>
               <TableHead>Coupons</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredStores.map((store) => (
-              <TableRow key={store.id}>
-                <TableCell className="font-medium">{store.name}</TableCell>
-                <TableCell>{store.category}</TableCell>
-                <TableCell>{store.couponsCount}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(store)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(store.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+            {filteredStores.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  No stores found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              filteredStores.map((store) => (
+                <TableRow key={store.id}>
+                  <TableCell className="font-medium">{store.name}</TableCell>
+                  <TableCell>{store.category}</TableCell>
+                  <TableCell>{store.user?.name || 'Unassigned'}</TableCell>
+                  <TableCell>{store.couponsCount}</TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(store)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(store.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -254,10 +391,11 @@ export default function StoresPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
+              {/* Basic Information */}
               <div className="space-y-4">
                 <h3 className="font-medium text-lg">Basic Information</h3>
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Store Name</Label>
+                  <Label htmlFor="name">Store Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -266,7 +404,7 @@ export default function StoresPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="slug">Slug</Label>
+                  <Label htmlFor="slug">Slug *</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
@@ -281,11 +419,10 @@ export default function StoresPage() {
                     value={formData.logo}
                     onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
                     placeholder="https://example.com/logo.png"
-                    required
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="url">Store URL</Label>
+                  <Label htmlFor="url">Store URL *</Label>
                   <Input
                     id="url"
                     value={formData.url}
@@ -295,7 +432,7 @@ export default function StoresPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">Category *</Label>
                   <Input
                     id="category"
                     value={formData.category}
@@ -304,7 +441,7 @@ export default function StoresPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="description">Short Description</Label>
+                  <Label htmlFor="description">Short Description *</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -320,11 +457,11 @@ export default function StoresPage() {
                     type="number"
                     value={formData.couponsCount}
                     onChange={(e) => setFormData({ ...formData, couponsCount: Number(e.target.value) })}
-                    required
                   />
                 </div>
               </div>
 
+              {/* Store Details */}
               <div className="space-y-4">
                 <h3 className="font-medium text-lg">Store Details</h3>
                 <div className="grid gap-2">
@@ -356,6 +493,7 @@ export default function StoresPage() {
                 </div>
               </div>
 
+              {/* FAQs */}
               <div className="space-y-4">
                 <h3 className="font-medium text-lg">FAQs</h3>
                 {formData.faqs.map((faq, index) => (
@@ -385,6 +523,7 @@ export default function StoresPage() {
                 </Button>
               </div>
 
+              {/* Similar Stores */}
               <div className="space-y-4">
                 <h3 className="font-medium text-lg">Similar Stores</h3>
                 <div className="grid gap-2">
@@ -400,58 +539,30 @@ export default function StoresPage() {
                 </div>
               </div>
 
+              {/* Additional Content */}
               <div className="space-y-4">
                 <h3 className="font-medium text-lg">Additional Content</h3>
-                <div className="grid gap-2">
-                  <Label>Popular Coupons</Label>
-                  <Textarea
-                    value={formData.popularCoupons}
-                    onChange={(e) => setFormData({ ...formData, popularCoupons: e.target.value })}
-                    placeholder="Describe popular coupons for this store..."
-                    rows={3}
-                  />
-                </div>
+                {[
+                  { label: 'Popular Coupons', key: 'popularCoupons' },
+                  { label: 'Trust Content', key: 'trustContent' },
+                  { label: 'Customer Savings Stories', key: 'customerSavings' },
+                  { label: 'Verified Savings', key: 'verifiedSavings' },
+                  { label: 'Competitor Pricing Info', key: 'competitorPricing' },
+                  { label: 'Expert Tips', key: 'expertTips' },
+                  { label: 'Benefits of Using Coupons', key: 'benefits' },
+                  { label: 'Why Use These Coupons', key: 'whyUseCoupons' },
+                ].map(({ label, key }) => (
+                  <div key={key} className="grid gap-2">
+                    <Label>{label}</Label>
+                    <Textarea
+                      value={formData[key]}
+                      onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                ))}
 
-                <div className="grid gap-2">
-                  <Label>Trust Content</Label>
-                  <Textarea
-                    value={formData.trustContent}
-                    onChange={(e) => setFormData({ ...formData, trustContent: e.target.value })}
-                    placeholder="Why customers should trust this store..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Customer Savings Stories</Label>
-                  <Textarea
-                    value={formData.customerSavings}
-                    onChange={(e) => setFormData({ ...formData, customerSavings: e.target.value })}
-                    placeholder="Real customer savings examples..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Verified Savings</Label>
-                  <Textarea
-                    value={formData.verifiedSavings}
-                    onChange={(e) => setFormData({ ...formData, verifiedSavings: e.target.value })}
-                    placeholder="Verified user results..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Competitor Pricing Info</Label>
-                  <Textarea
-                    value={formData.competitorPricing}
-                    onChange={(e) => setFormData({ ...formData, competitorPricing: e.target.value })}
-                    placeholder="How this store compares to competitors..."
-                    rows={3}
-                  />
-                </div>
-
+                {/* Price Comparison Table */}
                 <div className="space-y-4">
                   <h4 className="font-medium">Price Comparison Table</h4>
                   {formData.priceComparison.map((comp, index) => (
@@ -493,43 +604,16 @@ export default function StoresPage() {
                     Add Comparison Row
                   </Button>
                 </div>
-
-                <div className="grid gap-2">
-                  <Label>Expert Tips</Label>
-                  <Textarea
-                    value={formData.expertTips}
-                    onChange={(e) => setFormData({ ...formData, expertTips: e.target.value })}
-                    placeholder="Expert tips to maximize savings..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Benefits of Using Coupons</Label>
-                  <Textarea
-                    value={formData.benefits}
-                    onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
-                    placeholder="List the benefits..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Why Use These Coupons</Label>
-                  <Textarea
-                    value={formData.whyUseCoupons}
-                    onChange={(e) => setFormData({ ...formData, whyUseCoupons: e.target.value })}
-                    placeholder="Reasons to use these coupons..."
-                    rows={3}
-                  />
-                </div>
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={loading}>
                 Cancel
               </Button>
-              <Button type="submit">{editingStore ? 'Update' : 'Add'} Store</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                {editingStore ? 'Update' : 'Add'} Store
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
