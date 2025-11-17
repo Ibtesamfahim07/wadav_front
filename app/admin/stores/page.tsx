@@ -27,6 +27,31 @@ import { Textarea } from '@/components/ui/textarea';
 
 const API_BASE = 'http://localhost:5000/api';
 
+// Define the form data type
+type StoreFormData = {
+  name: string;
+  slug: string;
+  logo: string;
+  description: string;
+  category: string;
+  url: string;
+  couponsCount: number;
+  aboutStore: string;
+  howToApply: string;
+  whyChoose: string;
+  faqs: { question: string; answer: string; }[];
+  similarStores: string[];
+  popularCoupons: string;
+  trustContent: string;
+  customerSavings: string;
+  verifiedSavings: string;
+  competitorPricing: string;
+  priceComparison: { item: string; withCoupon: string; withoutCoupon: string; savings: string; }[];
+  expertTips: string;
+  benefits: string;
+  whyUseCoupons: string;
+};
+
 export default function StoresPage() {
   const [stores, setStores] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,7 +61,7 @@ export default function StoresPage() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StoreFormData>({
     name: '',
     slug: '',
     logo: '',
@@ -47,14 +72,14 @@ export default function StoresPage() {
     aboutStore: '',
     howToApply: '',
     whyChoose: '',
-    faqs: [] as { question: string; answer: string; }[],
-    similarStores: [] as string[],
+    faqs: [],
+    similarStores: [],
     popularCoupons: '',
     trustContent: '',
     customerSavings: '',
     verifiedSavings: '',
     competitorPricing: '',
-    priceComparison: [] as { item: string; withCoupon: string; withoutCoupon: string; savings: string; }[],
+    priceComparison: [],
     expertTips: '',
     benefits: '',
     whyUseCoupons: '',
@@ -87,7 +112,6 @@ export default function StoresPage() {
         throw new Error(data.message || 'Failed to fetch stores');
       }
 
-      // The backend returns data in { success: true, data: [...stores] }
       const storesData = Array.isArray(data.data) ? data.data : [];
       console.log('[Admin Stores] Setting stores:', storesData.length);
       setStores(storesData);
@@ -170,7 +194,6 @@ export default function StoresPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.name.trim()) {
       toast({ title: 'Error', description: 'Store name is required', variant: 'destructive' });
       return;
@@ -321,14 +344,14 @@ export default function StoresPage() {
           <h2 className="text-3xl font-bold">Manage Stores</h2>
           <p className="text-muted-foreground">Add, edit, or delete stores</p>
         </div>
-        {/* <Button onClick={() => {
+        <Button onClick={() => {
           setEditingStore(null);
           resetForm();
           setIsDialogOpen(true);
         }}>
           <Plus className="h-4 w-4 mr-2" />
           Add Store
-        </Button> */}
+        </Button>
       </div>
 
       <div className="relative">
@@ -539,23 +562,23 @@ export default function StoresPage() {
                 </div>
               </div>
 
-              {/* Additional Content */}
+              {/* Additional Content - FIXED with type assertion */}
               <div className="space-y-4">
                 <h3 className="font-medium text-lg">Additional Content</h3>
                 {[
-                  { label: 'Popular Coupons', key: 'popularCoupons' },
-                  { label: 'Trust Content', key: 'trustContent' },
-                  { label: 'Customer Savings Stories', key: 'customerSavings' },
-                  { label: 'Verified Savings', key: 'verifiedSavings' },
-                  { label: 'Competitor Pricing Info', key: 'competitorPricing' },
-                  { label: 'Expert Tips', key: 'expertTips' },
-                  { label: 'Benefits of Using Coupons', key: 'benefits' },
-                  { label: 'Why Use These Coupons', key: 'whyUseCoupons' },
+                  { label: 'Popular Coupons', key: 'popularCoupons' as keyof StoreFormData },
+                  { label: 'Trust Content', key: 'trustContent' as keyof StoreFormData },
+                  { label: 'Customer Savings Stories', key: 'customerSavings' as keyof StoreFormData },
+                  { label: 'Verified Savings', key: 'verifiedSavings' as keyof StoreFormData },
+                  { label: 'Competitor Pricing Info', key: 'competitorPricing' as keyof StoreFormData },
+                  { label: 'Expert Tips', key: 'expertTips' as keyof StoreFormData },
+                  { label: 'Benefits of Using Coupons', key: 'benefits' as keyof StoreFormData },
+                  { label: 'Why Use These Coupons', key: 'whyUseCoupons' as keyof StoreFormData },
                 ].map(({ label, key }) => (
                   <div key={key} className="grid gap-2">
                     <Label>{label}</Label>
                     <Textarea
-                      value={formData[key]}
+                      value={formData[key] as string}
                       onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
                       rows={3}
                     />
