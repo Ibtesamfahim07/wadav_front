@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Loader2, Search, Store, Edit, Trash2, X } from 'lucide-react';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app/';
 
 export default function UserDashboard() {
   const { user, isLoading: isCheckingAuth } = useUser();

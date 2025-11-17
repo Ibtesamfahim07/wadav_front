@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from 'react';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app/';
 
 interface User {
   id: string;

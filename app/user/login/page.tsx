@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app/';
 
 export default function UserLogin() {
   const [name, setName] = useState('');

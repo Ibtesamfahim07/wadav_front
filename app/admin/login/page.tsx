@@ -23,7 +23,7 @@ const AdminLogin = () => {
 
     try {
       // CHANGE THIS LINE - add /admin to the path
-      const res = await fetch('http://localhost:5000/api/admin/admin-login', {
+      const res = await fetch('http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api/admin/admin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

@@ -55,7 +55,7 @@ export default function BlogPostsPage() {
   const [editingPost, setEditingPost] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const API_BASE = 'http://localhost:5000/api';
+  const API_BASE = 'http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api';
 
   const [formData, setFormData] = useState({
     title: '',

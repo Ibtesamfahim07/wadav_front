@@ -25,7 +25,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api';
 
 // Define the form data type
 type StoreFormData = {

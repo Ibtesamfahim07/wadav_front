@@ -147,7 +147,7 @@ const ContentBlockRenderer = ({ block }: { block: ContentBlock }) => {
 // Fetch blog post from API
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api';
     const res = await fetch(`${apiUrl}/blog/${slug}`, {
       next: { revalidate: 60 },
     });

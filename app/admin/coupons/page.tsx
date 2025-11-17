@@ -77,7 +77,7 @@ type Coupon = CouponFromAPI & {
 // ---------------------------------------------------------------------
 // API helpers
 // ---------------------------------------------------------------------
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api';
 
 const API = {
   coupons: `${API_BASE}/admin/coupons`,

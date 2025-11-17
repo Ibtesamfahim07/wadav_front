@@ -81,7 +81,7 @@ const Dashboard = () => {
     try {
       const userData = { name: username, password };
 
-      const response = await fetch('http://localhost:5000/api/admin/create-user-simple', {
+      const response = await fetch('http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api/admin/create-user-simple', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),

@@ -66,7 +66,7 @@ export default function UsersPage() {
     try {
       setIsLoading(true);
       // TODO: Replace with your actual get users endpoint
-      const response = await fetch('http://localhost:5000/api/admin/users', {
+      const response = await fetch('http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api/admin/users', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
         },
@@ -104,7 +104,7 @@ export default function UsersPage() {
     if (!confirm('Are you sure you want to delete this user?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+      const response = await fetch(`http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api/admin/users/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
@@ -162,7 +162,7 @@ export default function UsersPage() {
     try {
       if (editingUser) {
         // Update user
-        const response = await fetch(`http://localhost:5000/api/admin/users/${editingUser.id}`, {
+        const response = await fetch(`http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api/admin/users/${editingUser.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export default function UsersPage() {
           ...(formData.storeId && { storeId: formData.storeId }),
         };
 
-        const response = await fetch('http://localhost:5000/api/admin/create-user-simple', {
+        const response = await fetch('http://https://wadavback1-6iy0oc8nt-totutoti727-5984s-projects.vercel.app//api/admin/create-user-simple', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
