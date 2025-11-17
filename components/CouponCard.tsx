@@ -40,7 +40,9 @@ export default function CouponCard({
   expiryDate,
 }: CouponCardProps) {
   const { toast } = useToast();
-  const expired = expiryDate && new Date(expiryDate) < new Date();
+  
+  // FIXED: Ensure expired is always a boolean
+  const expired = expiryDate ? new Date(expiryDate) < new Date() : false;
 
   const couponColors = [
     "bg-blue-600",
